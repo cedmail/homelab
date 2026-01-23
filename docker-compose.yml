@@ -78,7 +78,7 @@ services:
       FTLCONF_dns_listeningMode: 'ALL'
       FTLCONF_dns_hosts: |-
         127.0.0.1 mylocal
-        192.168.4.232 *.home.com
+        192.168.4.232 traefik.home.com pihole.home.com
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
