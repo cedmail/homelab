@@ -1,0 +1,9 @@
+tls:
+  certificates:
+    - certFile: /etc/ssl/traefik/localhost.crt
+      keyFile: /etc/ssl/traefik/localhost.key
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/ssl/traefik/localhost.crt
+        keyFile: /etc/ssl/traefik/localhost.key
