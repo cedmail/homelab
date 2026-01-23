@@ -61,12 +61,34 @@ services:
     container_name: pihole
     image: pihole/pihole:latest
     ports:
+      # DNS Ports
       - "53:53/tcp"
       - "53:53/udp"
+      # Uncomment the below if using Pi-hole as your DHCP Server
+      #- "67:67/udp"
+      # Uncomment the line below if you are using Pi-hole as your NTP server
+      #- "123:123/udp"
     environment:
-      TZ: America/Toronto
-      WEBPASSWORD: ${SUPER_SECRET_PASSWORD}
-      DNSMASQ_LISTENING: all
+      # Set the appropriate timezone for your location from
+      # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones, e.g:
+      TZ: 'America/Toronto'
+      # Set a password to access the web interface. Not setting one will result in a random password being assigned
+      FTLCONF_webserver_api_password: ${SUPER_SECRET_PASSWORD}
+      # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
+      FTLCONF_dns_listeningMode: 'ALL'
+    # Volumes store your data between container upgrades
+    volumes:
+      # For persisting Pi-hole's databases and common configuration file
+      - './etc-pihole:/etc/pihole'
+    cap_add:
+      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+      # Required if you are using Pi-hole as your DHCP server, else not needed
+      - NET_ADMIN
+      # Required if you are using Pi-hole as your NTP client to be able to set the host's system time
+      - SYS_TIME
+      # Optional, if Pi-hole should get some more processing time
+      - SYS_NICE
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=homelab-network"
@@ -74,9 +96,6 @@ services:
       - "traefik.http.routers.pihole.entrypoints=websecure"
       - "traefik.http.routers.pihole.tls=true"
       - "traefik.http.services.pihole.loadbalancer.server.port=80"
-    volumes:
-      - ./volumes/pihole/custom.list:/etc/pihole/custom.list
-    restart: unless-stopped
     networks:
       - homelab
 
