@@ -44,7 +44,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=homelab-network"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.home`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.home.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       - "traefik.http.routers.dashboard.service=api@internal"
       # Add the following label
       - "traefik.http.routers.dashboard.tls=true"
@@ -76,11 +76,12 @@ services:
       FTLCONF_webserver_api_password: ${SUPER_SECRET_PASSWORD}
       # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
       FTLCONF_dns_listeningMode: 'ALL'
-      FTLCONF_dns_hostRecord: 'traefik.home,192.168.4.232'
+#      FTLCONF_dns_hostRecord: 'traefik.home,192.168.4.232'
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
       - ./volumes/pihole/etc:/etc/pihole
+      - ./volumes/pihole/dnsmasq.d:/etc/dnsmasq.d
     cap_add:
       # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
       # Required if you are using Pi-hole as your DHCP server, else not needed
@@ -93,7 +94,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=homelab-network"
-      - "traefik.http.routers.pihole.rule=Host(`pihole.home`)"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.home.com`)"
       - "traefik.http.routers.pihole.entrypoints=websecure"
       - "traefik.http.routers.pihole.tls=true"
       - "traefik.http.services.pihole.loadbalancer.server.port=80"
