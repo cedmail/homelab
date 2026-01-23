@@ -76,7 +76,6 @@ services:
       FTLCONF_webserver_api_password: ${SUPER_SECRET_PASSWORD}
       # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
       FTLCONF_dns_listeningMode: 'ALL'
-      FTLCONF_dns_domain_name: 'home'
       FTLCONF_dns_hostRecord: '*.home,192.168.4.232'
     # Volumes store your data between container upgrades
     volumes:
