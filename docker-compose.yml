@@ -77,12 +77,11 @@ services:
       # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
       FTLCONF_dns_listeningMode: 'ALL'
       FTLCONF_dns_domain_name: 'home'
-#      FTLCONF_dns_hostRecord: 'pihole,pihole.home,192.168.4.232'
+      FTLCONF_dns_hostRecord: '*.home,192.168.4.232'
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
       - ./volumes/pihole/etc:/etc/pihole
-      - ./volumes/pihole/dnsmasq.d:/etc/dnsmasq.d
     cap_add:
       # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
       # Required if you are using Pi-hole as your DHCP server, else not needed
