@@ -77,7 +77,6 @@ services:
       # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
       FTLCONF_dns_listeningMode: 'ALL'
       FTLCONF_dns_hostRecord: 'traefik.home,192.168.4.232'
-      FTLCONF_dns_hostRecord: 'pihole.home,192.168.4.232'
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
