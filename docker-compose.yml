@@ -1,0 +1,85 @@
+name: homelab
+
+networks:
+  homelab:
+    name: homelab-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.1.0/24
+
+services:
+  reverse-proxy:
+    # The official v3 Traefik docker image
+    image: traefik:v3.6
+    hostname: proxy
+    restart: unless-stopped
+    environment:
+      TZ: America/Toronto
+    # Enables the web UI and tells Traefik to listen to docker
+    command:
+      - --api=true
+      - --api.disabledashboardad=true
+      - --log.format=json
+      - --log.level=INFO
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entryPoints.websecure.http.tls=true
+      - --providers.file.filename=/etc/traefik/tls.yml
+      - --metrics.prometheus=true
+      - --metrics.prometheus.addEntryPointsLabels=true
+      - --metrics.prometheus.addServicesLabels=true
+    deploy:
+      resources:
+        limits:
+          memory: 128mb
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The HTTPS port
+      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.home`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      # Add the following label
+      - "traefik.http.routers.dashboard.tls=true"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      #      - ./volumes/traefik/tls.yml:/etc/traefik/tls.yml:ro # Traefik TLS configuration
+      - ./volumes/traefik/tlsmkcert.yml:/etc/traefik/tls.yml:ro # Traefik TLS configuration with mkcert
+      - ./volumes/traefik/certs:/etc/ssl/traefik:ro # SSL certificates
+    networks:
+      - homelab
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      TZ: America/Toronto
+      WEBPASSWORD: ${SUPER_SECRET_PASSWORD}
+      DNSMASQ_LISTENING: all
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.home`)"
+      - "traefik.http.routers.pihole.entrypoints=websecure"
+      - "traefik.http.routers.pihole.tls=true"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+    volumes:
+      - ./volumes/pihole/custom.list:/etc/pihole/custom.list
+    restart: unless-stopped
+    networks:
+      - homelab
+
+
+
+
