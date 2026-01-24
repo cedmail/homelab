@@ -13,6 +13,7 @@ services:
   reverse-proxy:
     # The official v3 Traefik docker image
     image: traefik:v3.6
+    pull_policy: always
     hostname: proxy
     restart: unless-stopped
     environment:
@@ -59,6 +60,7 @@ services:
   pihole:
     container_name: pihole
     image: pihole/pihole:latest
+    pull_policy: always
     ports:
       # DNS Ports
       - "53:53/tcp"
@@ -75,9 +77,10 @@ services:
       FTLCONF_webserver_api_password: ${SUPER_SECRET_PASSWORD}
       # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
       FTLCONF_dns_listeningMode: 'ALL'
-      FTLCONF_dns_hosts: |-
-        127.0.0.1 mylocal
-        192.168.4.232 traefik.home.com pihole.home.com
+#      FTLCONF_dns_hosts: |-
+#        127.0.0.1 mylocal
+#        192.168.4.232 traefik.home.com pihole.home.com
+      FTLCONF_misc_etc_dnsmasq_d: true
     # Volumes store your data between container upgrades
     volumes:
       # For persisting Pi-hole's databases and common configuration file
