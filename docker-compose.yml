@@ -22,16 +22,15 @@ services:
       - --api=true
       - --api.disabledashboardad=true
       - --log.format=json
-      - --log.level=INFO
+      - --log.level=DEBUG
       - --providers.docker
-      - --providers.docker.exposedbydefault=false
+      - --providers.docker.exposedbydefault=true
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --entryPoints.websecure.http.tls=true
-      - --providers.file.filename=/etc/traefik/tls.yml
-      - --metrics.prometheus=true
-      - --metrics.prometheus.addEntryPointsLabels=true
-      - --metrics.prometheus.addServicesLabels=true
+#      - --metrics.prometheus=true
+#      - --metrics.prometheus.addEntryPointsLabels=true
+#      - --metrics.prometheus.addServicesLabels=true
     deploy:
       resources:
         limits:
