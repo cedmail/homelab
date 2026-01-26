@@ -235,7 +235,8 @@ services:
       APACHE_PORT: 11000
       APACHE_IP_BINDING: 0.0.0.0
       APACHE_ADDITIONAL_NETWORK: homelab-network
-      NEXTCLOUD_DATADIR: ${NEXTCLOUD_DATADIR:-./volumes/nextcloud/data}
+      NEXTCLOUD_DATADIR: ${NEXTCLOUD_DATADIR:-./volumes/nextcloud/data}let's call it a day :)
+
       SKIP_DOMAIN_VALIDATION: true
       TZ: America/Toronto
     volumes:
@@ -249,7 +250,7 @@ services:
       - "traefik.http.routers.nextcloud.rule=Host(`office.home.com`)"
       - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.tls=true"
-      - "traefik.http.services.nextcloud.loadbalancer.server.port=11000"
+      - "traefik.http.services.nextcloud.loadbalancer.server.url=http://nextcloud-aio-apache:11000"
       - "traefik.http.middlewares.nc-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.nc-secure-headers.headers.hostsProxyHeaders=X-Forwarded-Host"
       - "traefik.http.middlewares.nc-secure-headers.headers.referrerPolicy=same-origin"
