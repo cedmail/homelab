@@ -9,6 +9,10 @@ networks:
       config:
         - subnet: 172.16.1.0/24
 
+  volumes:
+    database:
+      driver: local
+
 services:
   reverse-proxy:
     # The official v3 Traefik docker image
@@ -116,7 +120,7 @@ services:
       POSTGRES_USER: authentik
       POSTGRES_DB: authentik
     volumes:
-      - ./volumes/authentik/db:/var/lib/postgresql/data
+      - database:/var/lib/postgresql/data
     networks:
       - homelab
     healthcheck:
@@ -140,7 +144,7 @@ services:
 
   # Authentik Server
   authentik-server:
-    image: ghcr.io/goauthentik/server:latest
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.12.1}
     container_name: authentik-server
     restart: unless-stopped
     command: server
@@ -153,7 +157,7 @@ services:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
       TZ: America/Toronto
     volumes:
-      - ./volumes/authentik/media:/media
+      - ./volumes/authentik/data:/data
       - ./volumes/authentik/custom-templates:/templates
     depends_on:
       authentik-db:
@@ -172,7 +176,7 @@ services:
 
   # Authentik Worker
   authentik-worker:
-    image: ghcr.io/goauthentik/server:latest
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.12.1}
     container_name: authentik-worker
     restart: unless-stopped
     command: worker
@@ -185,7 +189,8 @@ services:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
       TZ: America/Toronto
     volumes:
-      - ./volumes/authentik/media:/media
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./volumes/authentik/data:/data
       - ./volumes/authentik/certs:/certs
       - ./volumes/authentik/custom-templates:/templates
     depends_on:
