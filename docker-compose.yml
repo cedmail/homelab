@@ -106,6 +106,115 @@ services:
     networks:
       - homelab
 
+  # PostgreSQL for Authentik
+  authentik-db:
+    image: postgres:17-alpine
+    container_name: authentik-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${AUTHENTIK_DB_PASSWORD:-changeme}
+      POSTGRES_USER: authentik
+      POSTGRES_DB: authentik
+    volumes:
+      - ./volumes/authentik/db:/var/lib/postgresql/data
+    networks:
+      - homelab
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U authentik" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # Redis for Authentik
+  authentik-redis:
+    image: redis:alpine
+    container_name: authentik-redis
+    restart: unless-stopped
+    networks:
+      - homelab
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Authentik Server
+  authentik-server:
+    image: ghcr.io/goauthentik/server:latest
+    container_name: authentik-server
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD:-changeme}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      TZ: America/Toronto
+    volumes:
+      - ./volumes/authentik/media:/media
+      - ./volumes/authentik/custom-templates:/templates
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.authentik.rule=Host(`auth.home.com`)"
+      - "traefik.http.routers.authentik.entrypoints=websecure"
+      - "traefik.http.routers.authentik.tls=true"
+      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+    networks:
+      - homelab
+
+  # Authentik Worker
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:latest
+    container_name: authentik-worker
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD:-changeme}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      TZ: America/Toronto
+    volumes:
+      - ./volumes/authentik/media:/media
+      - ./volumes/authentik/certs:/certs
+      - ./volumes/authentik/custom-templates:/templates
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+    networks:
+      - homelab
+
+  # Home Assistant
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    privileged: true
+    environment:
+      TZ: America/Toronto
+    volumes:
+      - ./volumes/homeassistant:/config
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.homeassistant.rule=Host(`ha.home.com`)"
+      - "traefik.http.routers.homeassistant.entrypoints=websecure"
+      - "traefik.http.routers.homeassistant.tls=true"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
+    networks:
+      - homelab
 
 

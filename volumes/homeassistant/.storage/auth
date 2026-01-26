@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "auth",
+  "data": {
+    "users": [
+      {
+        "id": "c1771f048c524196be8b13e9f22480e8",
+        "group_ids": [
+          "system-read-only"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "Home Assistant Content",
+        "system_generated": true,
+        "local_only": false
+      },
+      {
+        "id": "008816d38bef4e6380d8f6bd47c338a2",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": true,
+        "is_active": true,
+        "name": "Cedric Mailleux",
+        "system_generated": false,
+        "local_only": false
+      }
+    ],
+    "groups": [
+      {
+        "id": "system-admin",
+        "name": "Administrators"
+      },
+      {
+        "id": "system-users",
+        "name": "Users"
+      },
+      {
+        "id": "system-read-only",
+        "name": "Read Only"
+      }
+    ],
+    "credentials": [
+      {
+        "id": "83791cb725ab4711adf4c59eefc39816",
+        "user_id": "008816d38bef4e6380d8f6bd47c338a2",
+        "auth_provider_type": "homeassistant",
+        "auth_provider_id": null,
+        "data": {
+          "username": "cedric.mailleux@gmail.com"
+        }
+      }
+    ],
+    "refresh_tokens": [
+      {
+        "id": "64def96e7bf94ae48542b1f24dd716a2",
+        "user_id": "c1771f048c524196be8b13e9f22480e8",
+        "client_id": null,
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "system",
+        "created_at": "2026-01-24T17:17:21.414775+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "3df90ad10d09a2a0a9db1dae1c1af891464a917986f26a4380e5fed63163df4b2b613f01df4c347a90df988143c09a33b89bcb05eba56bab5fe38a61a6387fbe",
+        "jwt_key": "f74c2398478b09c5d991d113e57fd76209245e1eddd437d675c1f91b4832bef9e712763ed0ab3618183163d510ea0e4127b194cd74c0c843143458edbe44a456",
+        "last_used_at": null,
+        "last_used_ip": null,
+        "expire_at": null,
+        "credential_id": null,
+        "version": "2026.1.3"
+      },
+      {
+        "id": "c929bc75cbc8486d80fbe87f9bfa97ba",
+        "user_id": "008816d38bef4e6380d8f6bd47c338a2",
+        "client_id": "https://ha.home.com/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2026-01-24T17:33:57.069235+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "c96ddad7dc0d18716b6fad5f1140eab5844d7f3476d33ed03f9ec970239356fb9723ffc39c31809a16a8e1ab1482884e120eb8c59cc93c83fa765c82aa98448b",
+        "jwt_key": "8457a7d2a116e4e2fa4374bcad374642bc4ef8904f5942881a3fa81a0699858ba620a96adb2aef791c316a48bcb570b9f215d388b60355c7c62b38bcc1fffe57",
+        "last_used_at": "2026-01-26T14:22:17.429041+00:00",
+        "last_used_ip": "172.16.1.1",
+        "expire_at": 1777213337.429041,
+        "credential_id": "83791cb725ab4711adf4c59eefc39816",
+        "version": "2026.1.3"
+      }
+    ]
+  }
+}

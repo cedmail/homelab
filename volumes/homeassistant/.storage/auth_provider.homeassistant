@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "auth_provider.homeassistant",
+  "data": {
+    "users": [
+      {
+        "username": "cedric.mailleux@gmail.com",
+        "password": "JDJiJDEyJEQvbzR0dzkySGRueHJCNFBlMnI2ZC5ZLkl2L3duU2dvY0hXbC9IUlJGQW82dzZsdXBLQXp5"
+      }
+    ]
+  }
+}
