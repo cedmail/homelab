@@ -12,6 +12,8 @@ networks:
 volumes:
   database:
     driver: local
+  nextcloud_aio_mastercontainer:
+    driver: local
 
 services:
   reverse-proxy:
@@ -222,4 +224,33 @@ services:
     networks:
       - homelab
 
-
+  # Nextcloud AIO mastercontainer
+  nextcloud-aio-mastercontainer:
+    image: ghcr.io/nextcloud-releases/all-in-one:latest
+    init: true
+    container_name: nextcloud-aio-mastercontainer
+    restart: unless-stopped
+    environment:
+      APACHE_PORT: 11000
+      APACHE_IP_BINDING: 0.0.0.0
+      NEXTCLOUD_DATADIR: /mnt/nextcloud-data
+      SKIP_DOMAIN_VALIDATION: true
+      TZ: America/Toronto
+    volumes:
+      - nextcloud_aio_mastercontainer:/mnt/docker-aio-config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.nextcloud.rule=Host(`office.home.com`)"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud.tls=true"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=11000"
+      # AIO admin interface
+      - "traefik.http.routers.nextcloud-admin.rule=Host(`office-admin.home.com`)"
+      - "traefik.http.routers.nextcloud-admin.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud-admin.tls=true"
+      - "traefik.http.routers.nextcloud-admin.service=nextcloud-admin"
+      - "traefik.http.services.nextcloud-admin.loadbalancer.server.port=8080"
+    networks:
+      - homelab
