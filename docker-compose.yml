@@ -13,6 +13,7 @@ volumes:
   database:
     driver: local
   nextcloud_aio_mastercontainer:
+    name: nextcloud_aio_mastercontainer
     driver: local
 
 services:
@@ -239,6 +240,8 @@ services:
     volumes:
       - nextcloud_aio_mastercontainer:/mnt/docker-aio-config
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "8999:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=homelab-network"
@@ -246,11 +249,16 @@ services:
       - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.tls=true"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=11000"
-      # AIO admin interface
-      - "traefik.http.routers.nextcloud-admin.rule=Host(`office-admin.home.com`)"
-      - "traefik.http.routers.nextcloud-admin.entrypoints=websecure"
-      - "traefik.http.routers.nextcloud-admin.tls=true"
-      - "traefik.http.routers.nextcloud-admin.service=nextcloud-admin"
-      - "traefik.http.services.nextcloud-admin.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.nc-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.nc-secure-headers.headers.hostsProxyHeaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.nc-secure-headers.headers.referrerPolicy=same-origin"
+      - "traefik.http.middlewares.nc-chain.chain.middlewares=nc-redirect,nc-secure-headers"
+      - "traefik.http.routers.nextcloud-https.middlewares=nc-chain"
+#      # AIO admin interface
+#      - "traefik.http.routers.nextcloud-admin.rule=Host(`office-admin.home.com`)"
+#      - "traefik.http.routers.nextcloud-admin.entrypoints=websecure"
+#      - "traefik.http.routers.nextcloud-admin.tls=true"
+#      - "traefik.http.routers.nextcloud-admin.service=nextcloud-admin"
+#      - "traefik.http.services.nextcloud-admin.loadbalancer.server.port=8080"
     networks:
       - homelab
