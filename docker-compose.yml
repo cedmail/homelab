@@ -15,6 +15,8 @@ volumes:
   nextcloud_aio_mastercontainer:
     name: nextcloud_aio_mastercontainer
     driver: local
+  model-cache:
+    driver: local
 
 services:
   reverse-proxy:
@@ -256,11 +258,82 @@ services:
       - "traefik.http.middlewares.nc-secure-headers.headers.referrerPolicy=same-origin"
       - "traefik.http.middlewares.nc-chain.chain.middlewares=nc-redirect,nc-secure-headers"
       - "traefik.http.routers.nextcloud-https.middlewares=nc-chain"
-#      # AIO admin interface
-#      - "traefik.http.routers.nextcloud-admin.rule=Host(`office-admin.home.com`)"
-#      - "traefik.http.routers.nextcloud-admin.entrypoints=websecure"
-#      - "traefik.http.routers.nextcloud-admin.tls=true"
-#      - "traefik.http.routers.nextcloud-admin.service=nextcloud-admin"
-#      - "traefik.http.services.nextcloud-admin.loadbalancer.server.port=8080"
     networks:
       - homelab
+
+  # Immich PostgreSQL Database
+  immich-postgres:
+    image: tensorchord/pgvecto-rs:pg17-v0.4.0
+    container_name: immich-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD:-changeme}
+      POSTGRES_USER: immich
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ./volumes/immich/postgres:/var/lib/postgresql/data
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U immich -d immich"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Immich Redis
+  immich-redis:
+    image: redis:7-alpine
+    container_name: immich-redis
+    restart: unless-stopped
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Immich Server
+  immich-server:
+    image: ghcr.io/immich-app/immich-server:release
+    container_name: immich-server
+    restart: unless-stopped
+    environment:
+      DB_HOSTNAME: immich-postgres
+      DB_USERNAME: immich
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD:-changeme}
+      DB_DATABASE_NAME: immich
+      REDIS_HOSTNAME: immich-redis
+      TZ: America/Toronto
+      UPLOAD_LOCATION: ./volumes/immich/library
+    volumes:
+      - ./volumes/immich/library:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      immich-postgres:
+        condition: service_healthy
+      immich-redis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.immich.rule=Host(`photos.home.com`)"
+      - "traefik.http.routers.immich.entrypoints=websecure"
+      - "traefik.http.routers.immich.tls=true"
+      - "traefik.http.services.immich.loadbalancer.server.port=2283"
+    networks:
+      - homelab
+
+  # Immich Machine Learning
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    container_name: immich-machine-learning
+    restart: unless-stopped
+    environment:
+      TZ: America/Toronto
+    volumes:
+      - model-cache:/cache
+    networks:
+      - homelab
+
