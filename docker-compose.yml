@@ -352,6 +352,8 @@ services:
     volumes:
       - .volumes/booklore-db/config:/config
     restart: unless-stopped
+    networks:
+      - homelab
     healthcheck:
       test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost" ]
       interval: 5s
