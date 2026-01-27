@@ -263,7 +263,7 @@ services:
 
   # Immich PostgreSQL Database
   immich-postgres:
-    image: tensorchord/pgvecto-rs:pg17-v0.4.0
+    image: ghcr.io/immich-app/postgres:17-vectorchord0.5.3-pgvector0.8.1
     container_name: immich-postgres
     restart: unless-stopped
     environment:
