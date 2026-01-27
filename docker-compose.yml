@@ -339,33 +339,37 @@ services:
 
   # Booklore - Book Tracking
   booklore-db:
-    image: postgres:17-alpine
+    image: lscr.io/linuxserver/mariadb:11.4.5
     container_name: booklore-db
-    restart: unless-stopped
     environment:
-      POSTGRES_USER: booklore
-      POSTGRES_PASSWORD: ${SUPER_SECRET_PASSWORD}
-      POSTGRES_DB: booklore
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Toronto
+      - MYSQL_ROOT_PASSWORD=${SUPER_SECRET_PASSWORD}
+      - MYSQL_DATABASE=booklore
+      - MYSQL_USER=booklore
+      - MYSQL_PASSWORD=${SUPER_SECRET_PASSWORD}
     volumes:
-      - ./volumes/booklore/db:/var/lib/postgresql/data
-    networks:
-      - homelab
+      - .volumes/booklore-db/config:/config
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U booklore"]
-      interval: 10s
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost" ]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   booklore:
     image: booklore/booklore:latest
     container_name: booklore
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://booklore:${SUPER_SECRET_PASSWORD}@booklore-db:5432/booklore
+      DATABASE_URL: jdbc:mariadb://booklore-db:3306/booklore
       SECRET_KEY_BASE: ${BOOKLORE_SECRET_KEY}
       TZ: America/Toronto
     volumes:
-      - ./volumes/booklore/uploads:/app/uploads
+      - ./volumes/booklore/data:/app/data
+      - ./volumes/booklore/books:/books
+      - ./volumes/booklore/bookdrop:/bookdrop
     depends_on:
       booklore-db:
         condition: service_healthy
@@ -375,7 +379,7 @@ services:
       - "traefik.http.routers.booklore.rule=Host(`books.home.com`)"
       - "traefik.http.routers.booklore.entrypoints=websecure"
       - "traefik.http.routers.booklore.tls=true"
-      - "traefik.http.services.booklore.loadbalancer.server.port=4000"
+      - "traefik.http.services.booklore.loadbalancer.server.port=6060"
     networks:
       - homelab
 
