@@ -366,7 +366,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: jdbc:mariadb://booklore-db:3306/booklore
-      SECRET_KEY_BASE: ${BOOKLORE_SECRET_KEY}
+      DATABASE_USERNAME: booklore
+      DATABASE_PASSWORD: ${SUPER_SECRET_PASSWORD}
       TZ: America/Toronto
     volumes:
       - ./volumes/booklore/data:/app/data
