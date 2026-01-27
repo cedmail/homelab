@@ -337,3 +337,90 @@ services:
     networks:
       - homelab
 
+  # Booklore - Book Tracking
+  booklore-db:
+    image: postgres:17-alpine
+    container_name: booklore-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: booklore
+      POSTGRES_PASSWORD: ${SUPER_SECRET_PASSWORD}
+      POSTGRES_DB: booklore
+    volumes:
+      - ./volumes/booklore/db:/var/lib/postgresql/data
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booklore"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  booklore:
+    image: booklore/booklore:latest
+    container_name: booklore
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://booklore:${SUPER_SECRET_PASSWORD}@booklore-db:5432/booklore
+      SECRET_KEY_BASE: ${BOOKLORE_SECRET_KEY}
+      TZ: America/Toronto
+    volumes:
+      - ./volumes/booklore/uploads:/app/uploads
+    depends_on:
+      booklore-db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.booklore.rule=Host(`books.home.com`)"
+      - "traefik.http.routers.booklore.entrypoints=websecure"
+      - "traefik.http.routers.booklore.tls=true"
+      - "traefik.http.services.booklore.loadbalancer.server.port=4000"
+    networks:
+      - homelab
+
+  # Mealie - Recipe Manager
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:latest
+    container_name: mealie
+    restart: unless-stopped
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Toronto
+      MAX_WORKERS: 1
+      WEB_CONCURRENCY: 1
+      BASE_URL: https://recipes.home.com
+    volumes:
+      - ./volumes/mealie:/app/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.mealie.rule=Host(`recipes.home.com`)"
+      - "traefik.http.routers.mealie.entrypoints=websecure"
+      - "traefik.http.routers.mealie.tls=true"
+      - "traefik.http.services.mealie.loadbalancer.server.port=9000"
+    networks:
+      - homelab
+
+  # Dozzle - Docker Logs & Monitoring
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: unless-stopped
+    environment:
+      DOZZLE_LEVEL: info
+      DOZZLE_TAILSIZE: 300
+      DOZZLE_FILTER: "status=running"
+      TZ: America/Toronto
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=homelab-network"
+      - "traefik.http.routers.dozzle.rule=Host(`monitor.home.com`)"
+      - "traefik.http.routers.dozzle.entrypoints=websecure"
+      - "traefik.http.routers.dozzle.tls=true"
+      - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+    networks:
+      - homelab
