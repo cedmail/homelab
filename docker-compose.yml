@@ -417,7 +417,6 @@ services:
     restart: unless-stopped
     environment:
       DOZZLE_LEVEL: info
-      DOZZLE_TAILSIZE: 300
       DOZZLE_FILTER: "status=running"
       DOZZLE_ENABLE_ACTIONS: true
       TZ: America/Toronto
