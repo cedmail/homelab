@@ -419,9 +419,11 @@ services:
       DOZZLE_LEVEL: info
       DOZZLE_TAILSIZE: 300
       DOZZLE_FILTER: "status=running"
+      DOZZLE_ENABLE_ACTIONS: true
       TZ: America/Toronto
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./volumes/dozzle/data:/data
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=homelab-network"
