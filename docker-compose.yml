@@ -21,7 +21,7 @@ volumes:
 services:
   reverse-proxy:
     # The official v3 Traefik docker image
-    image: traefik:v3.6
+    image: traefik:v3.7
     pull_policy: always
     hostname: proxy
     restart: unless-stopped
