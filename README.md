@@ -3,6 +3,8 @@
 
 See each service's documentation for setup, configuration, and usage details.
 
+> 🧭 **Dashboard:** open [`docs/dashboard.html`](docs/dashboard.html) in a browser for a one-click launcher to every service (with reachability status and links to each doc).
+
 ## Getting Started
 
 ### Media & Knowledge Management
